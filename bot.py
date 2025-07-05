@@ -33,12 +33,12 @@ def get_base_domain(url):
 async def fetch(session, url, proxy=None):
     headers = {'User-Agent': ua.random}
     try:
-        async with session.get(url, headers=headers, proxy=proxy, timeout=18) as response:
+        async with session.get(url, headers=headers, proxy=proxy, timeout=7) as response:
             return await response.text()
     except Exception:
         return None
 
-async def duckduckgo_search(query, max_results=60):
+async def duckduckgo_search(query, max_results=10):
     results, page = set(), 0
     async with aiohttp.ClientSession() as session:
         while len(results) < max_results:
@@ -51,10 +51,10 @@ async def duckduckgo_search(query, max_results=60):
             if not links: break
             results.update(links)
             page += 1
-            await asyncio.sleep(random.uniform(0.5, 1.2))
+            await asyncio.sleep(random.uniform(0.4, 1.1))
     return list(results)
 
-async def bing_search(query, max_results=60):
+async def bing_search(query, max_results=10):
     results, page = set(), 0
     async with aiohttp.ClientSession() as session:
         while len(results) < max_results:
@@ -67,10 +67,10 @@ async def bing_search(query, max_results=60):
             if not links: break
             results.update(links)
             page += 1
-            await asyncio.sleep(random.uniform(0.5, 1.2))
+            await asyncio.sleep(random.uniform(0.4, 1.1))
     return list(results)
 
-async def mojeek_search(query, max_results=60):
+async def mojeek_search(query, max_results=10):
     results, page = set(), 0
     async with aiohttp.ClientSession() as session:
         while len(results) < max_results:
@@ -83,10 +83,10 @@ async def mojeek_search(query, max_results=60):
             if not links: break
             results.update(links)
             page += 1
-            await asyncio.sleep(random.uniform(0.5, 1.2))
+            await asyncio.sleep(random.uniform(0.4, 1.1))
     return list(results)
 
-async def brave_search(query, max_results=60):
+async def brave_search(query, max_results=10):
     results, page = set(), 0
     async with aiohttp.ClientSession() as session:
         while len(results) < max_results:
@@ -99,10 +99,10 @@ async def brave_search(query, max_results=60):
             if not links: break
             results.update(links)
             page += 1
-            await asyncio.sleep(random.uniform(0.5, 1.2))
+            await asyncio.sleep(random.uniform(0.4, 1.1))
     return list(results)
 
-async def qwant_search(query, max_results=60):
+async def qwant_search(query, max_results=10):
     results, page = set(), 0
     async with aiohttp.ClientSession() as session:
         while len(results) < max_results:
@@ -115,10 +115,10 @@ async def qwant_search(query, max_results=60):
             if not links: break
             results.update(links)
             page += 1
-            await asyncio.sleep(random.uniform(0.5, 1.2))
+            await asyncio.sleep(random.uniform(0.4, 1.1))
     return list(results)
 
-async def yandex_search(query, max_results=60):
+async def yandex_search(query, max_results=10):
     results, page = set(), 0
     async with aiohttp.ClientSession() as session:
         while len(results) < max_results:
@@ -131,10 +131,10 @@ async def yandex_search(query, max_results=60):
             if not links: break
             results.update(links)
             page += 1
-            await asyncio.sleep(random.uniform(0.5, 1.2))
+            await asyncio.sleep(random.uniform(0.4, 1.1))
     return list(results)
 
-async def startpage_search(query, max_results=60):
+async def startpage_search(query, max_results=10):
     results, page = set(), 0
     async with aiohttp.ClientSession() as session:
         while len(results) < max_results:
@@ -147,10 +147,10 @@ async def startpage_search(query, max_results=60):
             if not links: break
             results.update(links)
             page += 1
-            await asyncio.sleep(random.uniform(0.5, 1.2))
+            await asyncio.sleep(random.uniform(0.4, 1.1))
     return list(results)
 
-async def metager_search(query, max_results=60):
+async def metager_search(query, max_results=10):
     results, page = set(), 0
     async with aiohttp.ClientSession() as session:
         while len(results) < max_results:
@@ -163,62 +163,100 @@ async def metager_search(query, max_results=60):
             if not links: break
             results.update(links)
             page += 1
-            await asyncio.sleep(random.uniform(0.5, 1.2))
+            await asyncio.sleep(random.uniform(0.4, 1.1))
     return list(results)
 
-# --- Shopify/Shop Pay fingerprint detection ---
-def is_shopify_site(url, html):
-    if "myshopify.com" in url.lower():
-        return True
-    if not html:
-        return False
-    h = html.lower()
-    if ('cdn.shopify.com' in h or 'x-shopify' in h or 'shopify' in h or
-        'assets/shopify' in h or 'shopify-section' in h or
-        'powered by shopify' in h or 'meta name="generator" content="shopify"' in h):
-        return True
-    return False
+async def gigablast_search(query, max_results=10):
+    results, page = set(), 0
+    async with aiohttp.ClientSession() as session:
+        while len(results) < max_results:
+            search_url = f"https://www.gigablast.com/search?q={query.replace(' ', '+')}&n=30&s={page*30}"
+            proxy = random.choice(PROXIES)
+            html = await fetch(session, search_url, proxy)
+            if not html: break
+            soup = BeautifulSoup(html, 'html.parser')
+            links = [a['href'] for a in soup.select('div.res h3 a') if a.get('href')]
+            if not links: break
+            results.update(links)
+            page += 1
+            await asyncio.sleep(random.uniform(0.6, 1.2))
+    return list(results)
 
-def has_shop_pay(html):
-    if not html:
-        return False
-    h = html.lower()
-    return ("shop pay" in h or "shoppay" in h)
+async def exalead_search(query, max_results=10):
+    results, page = set(), 0
+    async with aiohttp.ClientSession() as session:
+        while len(results) < max_results:
+            search_url = f"https://www.exalead.com/search/web/results/?q={query.replace(' ', '+')}&start={page*10}"
+            proxy = random.choice(PROXIES)
+            html = await fetch(session, search_url, proxy)
+            if not html: break
+            soup = BeautifulSoup(html, 'html.parser')
+            links = [a['href'] for a in soup.select('.result_title a') if a.get('href')]
+            if not links: break
+            results.update(links)
+            page += 1
+            await asyncio.sleep(random.uniform(0.6, 1.2))
+    return list(results)
 
-async def filter_by_shopify_and_shoppay(urls, keywords):
-    matched = []
-    sem = asyncio.Semaphore(20)
-    keywords = [k.lower() for k in keywords]
-    seen_domains = set()
+async def seznam_search(query, max_results=10):
+    results, page = set(), 0
+    async with aiohttp.ClientSession() as session:
+        while len(results) < max_results:
+            search_url = f"https://search.seznam.cz/?q={query.replace(' ', '+')}&from={page*10}"
+            proxy = random.choice(PROXIES)
+            html = await fetch(session, search_url, proxy)
+            if not html: break
+            soup = BeautifulSoup(html, 'html.parser')
+            links = [a['href'] for a in soup.select('.result h3 a') if a.get('href')]
+            if not links: break
+            results.update(links)
+            page += 1
+            await asyncio.sleep(random.uniform(0.6, 1.2))
+    return list(results)
 
-    async def check_url(url):
-        domain = get_base_domain(url)
-        if domain in seen_domains:
-            return
-        async with sem:
-            async with aiohttp.ClientSession(headers={'User-Agent': ua.random}) as session:
-                html = await fetch(session, url, proxy=random.choice(PROXIES))
-                if not html: return
-                if not is_shopify_site(url, html): return
-                if not has_shop_pay(html): return
-                if not all(k in html.lower() for k in keywords): return
-                seen_domains.add(domain)
-                matched.append(url.strip())
-    await asyncio.gather(*(check_url(url) for url in urls))
-    return matched
+async def yep_search(query, max_results=10):
+    results, page = set(), 0
+    async with aiohttp.ClientSession() as session:
+        while len(results) < max_results:
+            search_url = f"https://yep.com/web?q={query.replace(' ', '+')}&start={page*10}"
+            proxy = random.choice(PROXIES)
+            html = await fetch(session, search_url, proxy)
+            if not html: break
+            soup = BeautifulSoup(html, 'html.parser')
+            links = [a['href'] for a in soup.select('a.result-link') if a.get('href')]
+            if not links: break
+            results.update(links)
+            page += 1
+            await asyncio.sleep(random.uniform(0.6, 1.2))
+    return list(results)
+
+async def swisscows_search(query, max_results=10):
+    results, page = set(), 0
+    async with aiohttp.ClientSession() as session:
+        while len(results) < max_results:
+            search_url = f"https://swisscows.com/web?query={query.replace(' ', '+')}&page={page+1}"
+            proxy = random.choice(PROXIES)
+            html = await fetch(session, search_url, proxy)
+            if not html: break
+            soup = BeautifulSoup(html, 'html.parser')
+            links = [a['href'] for a in soup.select('a.swisscows-result__link') if a.get('href')]
+            if not links: break
+            results.update(links)
+            page += 1
+            await asyncio.sleep(random.uniform(0.6, 1.2))
+    return list(results)
 
 async def start(update, context):
     await update.message.reply_text(
-        "🤖 /dork <keyword(s)> — finds all Shopify stores (even private/custom domain) with Shop Pay. Example: /dork t-shirt"
+        "🤖 /dork <keyword(s)> — finds all links (deduped, no filtering, all APIs). Example: /dork t-shirt"
     )
 
 async def handle_dork(update, context):
     if context.args:
         keywords = context.args
         query = ' '.join(keywords)
-        msg = await update.message.reply_text(f"🔍 Searching all free engines for Shopify + Shop Pay stores: {query}")
+        msg = await update.message.reply_text(f"🔍 Scraping all free engines for all links: {query}")
 
-        # Advanced Shopify dorking
         dorks = [
             f'inurl:myshopify {query}',
             f'inurl:collections {query}',
@@ -228,38 +266,46 @@ async def handle_dork(update, context):
             f'"shopify" {query}',
         ]
 
-        # Launch all tasks concurrently
         search_tasks = []
         for dork in dorks:
             search_tasks += [
-                duckduckgo_search(dork, 20),
-                bing_search(dork, 20),
-                mojeek_search(dork, 20),
-                brave_search(dork, 20),
-                qwant_search(dork, 20),
-                yandex_search(dork, 20),
-                startpage_search(dork, 20),
-                metager_search(dork, 20)
+                duckduckgo_search(dork, 10),
+                bing_search(dork, 10),
+                mojeek_search(dork, 10),
+                brave_search(dork, 10),
+                qwant_search(dork, 10),
+                yandex_search(dork, 10),
+                startpage_search(dork, 10),
+                metager_search(dork, 10),
+                gigablast_search(dork, 10),
+                exalead_search(dork, 10),
+                seznam_search(dork, 10),
+                yep_search(dork, 10),
+                swisscows_search(dork, 10)
             ]
         all_results = await asyncio.gather(*search_tasks)
-        all_urls = set()
+        all_urls = []
         for res in all_results:
-            all_urls.update(res)
-        all_urls = list(all_urls)
+            all_urls += res
 
-        await msg.edit_text(f"🌐 Found {len(all_urls)} candidate URLs, checking for Shopify + Shop Pay & deduping...")
+        # Deduplicate by domain
+        unique_domains = set()
+        unique_urls = []
+        for url in all_urls:
+            base = get_base_domain(url)
+            if base not in unique_domains:
+                unique_domains.add(base)
+                unique_urls.append(url.strip())
 
-        filtered_urls = await filter_by_shopify_and_shoppay(all_urls, keywords)
-
-        filename = f'shopify_shoppay_{int(time.time())}.txt'
+        filename = f'dork_links_{int(time.time())}.txt'
         with open(filename, 'w', encoding='utf-8') as f:
-            for url in filtered_urls:
+            for url in unique_urls:
                 f.write(url + '\n')
         with open(filename, 'rb') as f:
             await update.message.reply_document(document=f, filename=filename)
         os.remove(filename)
 
-        await msg.edit_text(f"✅ Done! {len(filtered_urls)} unique Shopify + Shop Pay sites found (all free APIs).")
+        await msg.edit_text(f"✅ Done! {len(unique_urls)} unique links found (ALL free APIs, max speed).")
     else:
         await update.message.reply_text("❗ Use the command like: /dork t-shirt")
 
@@ -267,5 +313,5 @@ if __name__ == '__main__':
     app = ApplicationBuilder().token(TOKEN).build()
     app.add_handler(CommandHandler('start', start))
     app.add_handler(CommandHandler('dork', handle_dork))
-    print('🛒 Private/Public Shopify+ShopPay Finder (All Free APIs) running...')
+    print('⚡️ Dork Bot (all APIs, no filtering, max speed) running...')
     app.run_polling()
